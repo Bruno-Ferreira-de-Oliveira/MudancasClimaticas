@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{margin:0}</style>
+<title>MudançasClimáticas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: cabeçalho do trabalho, escolha do estado, os 4 gráficos do main.py um embaixo do outro */
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --fg: #1f2328;
+  --muted: #646a73;
+  --line: #e3e5e8;
+  --grade: #e5e5e5;
+  --chip: #f1f2f4;
+  --ativo: #1f2328;
+  /* Cores dos gráficos: as mesmas do main.py */
+  --firebrick: #b22222;
+  --steelblue: #4682b4;
+  --coral: #ff7f50;
+  --purple: #800080;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131417; --surface: #1b1d21; --fg: #e8e9eb; --muted: #9aa0a8;
+    --line: #2c2f35; --grade: #2c2f35; --chip: #24272c; --ativo: #e8e9eb;
+    --firebrick: #e06a63; --steelblue: #7fa9d4; --coral: #ff9a76; --purple: #c77dc7;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131417; --surface: #1b1d21; --fg: #e8e9eb; --muted: #9aa0a8;
+  --line: #2c2f35; --grade: #2c2f35; --chip: #24272c; --ativo: #e8e9eb;
+  --firebrick: #e06a63; --steelblue: #7fa9d4; --coral: #ff9a76; --purple: #c77dc7;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body);
+  font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+.wrap { max-width: 960px; margin: 0 auto; display: grid; gap: 36px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+header { padding-top: 48px; display: grid; gap: 20px; border-bottom: 1px solid var(--line); padding-bottom: 32px; }
+header h1 { font-size: clamp(32px, 6vw, 52px); line-height: 1.05; letter-spacing: -0.02em; }
+header p { margin: 0; max-width: 65ch; color: var(--muted); }
+.integrantes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 28px; }
+.integrantes li { display: flex; gap: 10px; align-items: baseline; }
+.integrantes .ra { font-family: var(--font-data); font-size: 13px; color: var(--muted); }
+
+.bloco { display: grid; gap: 14px; }
+.bloco h2 { font-size: 22px; }
+.ufs { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; }
+.ufs button {
+  font-family: var(--font-data); font-size: 14px; padding: 8px 0; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--chip); color: var(--fg); cursor: pointer;
+}
+.ufs button:hover { border-color: var(--muted); }
+.ufs button[aria-pressed="true"] { background: var(--ativo); border-color: var(--ativo); color: var(--bg); }
+button:focus-visible { outline: 2px solid var(--steelblue); outline-offset: 2px; }
+
+.painel-topo { display: grid; gap: 6px; }
+.painel-topo h2 { font-size: clamp(28px, 5vw, 40px); }
+.alternar { display: flex; flex-wrap: wrap; gap: 6px; }
+.alternar button {
+  font-family: var(--font-body); font-size: 14px; font-weight: 500; text-align: left;
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; cursor: pointer;
+  background: var(--surface); color: var(--fg); display: grid; gap: 2px;
+}
+.alternar button small { font-size: 12px; color: var(--muted); font-weight: 400; }
+.alternar button[aria-pressed="true"] { border-color: var(--ativo); box-shadow: inset 0 0 0 1px var(--ativo); }
+
+.grafico { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 10px; min-width: 0; }
+.grafico h3 { font-family: var(--font-body); font-size: 15px; font-weight: 500; text-align: center; }
+.grafico .nota { margin: 0; font-size: 13px; color: var(--muted); }
+.tela { position: relative; height: 340px; }
+.anos { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.anos button {
+  font-family: var(--font-body); font-size: 13px; color: var(--muted); background: none;
+  border: 1px solid transparent; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-variant-numeric: tabular-nums;
+}
+.anos button:hover { color: var(--fg); }
+.anos button[aria-selected="true"] { color: var(--fg); border-color: var(--ativo); font-weight: 600; }
+
+.metodo { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 28px; }
+.metodo h2 { font-size: 22px; }
+.metodo ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 75ch; }
+code { font-family: var(--font-data); font-size: 13px; }
+footer { font-size: 13px; color: var(--muted); }
+footer a { color: var(--steelblue); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">SI204 · Trabalho da disciplina</div>
+    <h1>Mudanças Climáticas e Temperatura</h1>
+    <ul class="integrantes" aria-label="Integrantes">
+      <li><span>Bruno Ferreira de Oliveira</span><span class="ra">RA 257198</span></li>
+      <li><span>Henriquy Dias Terto Alves</span><span class="ra">RA 312894</span></li>
+      <li><span>Lucas Otávio Marques da Costa</span><span class="ra">RA 218344</span></li>
+    </ul>
+  </header>
+
+  <section class="bloco" aria-labelledby="t-seletor">
+    <h2 id="t-seletor">Escolha um estado</h2>
+    <div class="ufs" id="ufs" role="group" aria-label="Estados"></div>
+  </section>
+
+  <section class="bloco" aria-live="polite">
+    <div class="painel-topo">
+      <div class="eyebrow" id="p-eyebrow">Estado</div>
+      <h2 id="p-nome">Carregando dados…</h2>
+    </div>
+    <div class="alternar" role="group" aria-label="Ver o estado ou a capital">
+      <button type="button" id="ver-estado" aria-pressed="true"><span>Média do estado</span><small id="ver-estado-sub"></small></button>
+      <button type="button" id="ver-capital" aria-pressed="false"><span id="ver-capital-nome">Capital</span><small id="ver-capital-sub"></small></button>
+    </div>
+  </section>
+
+  <div class="grafico">
+    <h3 id="t-linha"></h3>
+    <div class="anos" id="anos" role="tablist" aria-label="Escolha o ano"></div>
+    <div class="tela"><canvas id="g-linha"></canvas></div>
+  </div>
+  <div class="grafico">
+    <h3 id="t-chuva"></h3>
+    <div class="tela"><canvas id="g-chuva"></canvas></div>
+  </div>
+  <div class="grafico">
+    <h3 id="t-hist"></h3>
+    <div class="tela"><canvas id="g-hist"></canvas></div>
+  </div>
+  <div class="grafico">
+    <h3 id="t-disp"></h3>
+    <div class="tela"><canvas id="g-disp"></canvas></div>
+    <p class="nota">Mostramos 2.000 horas sorteadas, para a página não ficar pesada. A relação é a mesma do gráfico com todos os pontos.</p>
+  </div>
+  <div class="grafico">
+    <h3 id="t-anos"></h3>
+    <div class="tela"><canvas id="g-anos"></canvas></div>
+    <p class="nota">Cada linha é um ano. Os anos mais antigos aparecem mais claros, e o ano escolhido no primeiro gráfico fica mais grosso.</p>
+  </div>
+
+  <footer>Fonte: <a href="https://portal.inmet.gov.br/dadoshistoricos" target="_blank" rel="noopener">INMET, Dados Históricos</a>, de janeiro de 2020 a outubro de 2026.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="dados.js"></script>
+<script>
+const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+let DATA = null;
+let ufAtual = 'SP';
+let verAtual = 'estado';   // 'estado' ou 'capital'
+let anoAtual = 2026;
+const graficos = {};
+
+// Lê as cores do tema atual (claro ou escuro) a partir das variáveis CSS
+function cor(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+function comAlfa(hex, alfa) { return hex + Math.round(alfa * 255).toString(16).padStart(2, '0'); }
+function fmt(v, casas = 1) { return v === null || v === undefined ? '–' : v.toLocaleString('pt-BR', { maximumFractionDigits: casas }); }
+
+// Eixos no estilo do seaborn "whitegrid": grade clara e nomes dos eixos
+function eixos(nomeX, nomeY, extraX = {}, extraY = {}) {
+  const texto = cor('--muted');
+  return {
+    x: { title: { display: true, text: nomeX, color: cor('--fg') }, ticks: { color: texto }, grid: { color: cor('--grade') }, ...extraX },
+    y: { title: { display: true, text: nomeY, color: cor('--fg') }, ticks: { color: texto }, grid: { color: cor('--grade') }, ...extraY },
+  };
+}
+
+function criar(id, config) {
+  if (graficos[id]) graficos[id].destroy();
+  config.options = { responsive: true, maintainAspectRatio: false, animation: false, ...config.options };
+  graficos[id] = new Chart(document.getElementById(id), config);
+}
+
+// Transforma a lista de médias diárias em {data, valor}
+function dias(grupo) {
+  const inicio = new Date(grupo.diario.inicio + 'T12:00:00');
+  return grupo.diario.temperatura.map((v, i) => {
+    const d = new Date(inicio); d.setDate(d.getDate() + i);
+    return { ano: d.getFullYear(), mes: d.getMonth(), texto: d.toISOString().slice(0, 10), v };
+  });
+}
+
+function rotulo(d) {
+  return verAtual === 'estado'
+    ? `${ufAtual} - média de ${d.estado.estacoes} estações`
+    : `${ufAtual}/${d.capital.cidade}`;
+}
+
+// 1. grafico_temperatura_2026: linha da temperatura média diária de um ano
+function graficoLinha(grupo, nome) {
+  const doAno = dias(grupo).filter(x => x.ano === anoAtual);
+  document.getElementById('t-linha').textContent = `Evolução da Temperatura Média Diária em ${anoAtual} (INMET - ${nome})`;
+  criar('g-linha', {
+    type: 'line',
+    data: { labels: doAno.map(x => x.texto), datasets: [{ data: doAno.map(x => x.v), borderColor: cor('--firebrick'), borderWidth: 1.5, pointRadius: 0, spanGaps: false }] },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${fmt(c.parsed.y)} °C` } } },
+      interaction: { mode: 'index', intersect: false },
+      scales: eixos('Data', 'Temperatura (°C)', { ticks: { color: cor('--muted'), maxRotation: 45, minRotation: 45, autoSkip: true, maxTicksLimit: 12 } }),
+    },
+  });
+}
+
+// 2. grafico_chuva_mensal: barras da chuva média acumulada por mês
+function graficoChuva(grupo, nome) {
+  document.getElementById('t-chuva').textContent = `Média de Chuva Acumulada por Mês (INMET - ${nome})`;
+  criar('g-chuva', {
+    type: 'bar',
+    data: { labels: MESES, datasets: [{ data: grupo.chuva_mes, backgroundColor: cor('--steelblue') }] },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${fmt(c.parsed.y, 0)} mm` } } },
+      scales: eixos('Mês', 'Precipitação Média Mensal (mm)', { grid: { display: false } }, { beginAtZero: true }),
+    },
+  });
+}
+
+// 3. grafico_histograma_temperatura: barras de 2 em 2 °C + curva (kde)
+function graficoHist(grupo, nome) {
+  const faixas = DATA.faixas_histograma;          // de 0,5 em 0,5 °C
+  const fino = grupo.histograma;
+  // Junta de 4 em 4 faixas finas = faixas de 2 °C (binwidth=2 do main.py)
+  const barras = [];
+  for (let i = 0; i < fino.length; i += 4) {
+    const n = fino.slice(i, i + 4).reduce((a, b) => a + b, 0);
+    barras.push({ x: faixas[i] + 1, y: n });
+  }
+  // Curva suave: média ponderada (gaussiana) das faixas finas, na mesma escala das barras
+  const sigma = 1.2;
+  const curva = fino.map((_, i) => {
+    let s = 0;
+    fino.forEach((n, j) => { const d = (i - j) * 0.5; s += n * Math.exp(-d * d / (2 * sigma * sigma)); });
+    return { x: faixas[i] + 0.25, y: s / (sigma * Math.sqrt(2 * Math.PI)) * 0.5 * 4 };
+  });
+  const usados = barras.filter(b => b.y > 0);
+  // Eixo começa e termina em múltiplos de 5 °C
+  const min = Math.floor((usados[0].x - 1) / 5) * 5, max = Math.ceil((usados[usados.length - 1].x + 1) / 5) * 5;
+  document.getElementById('t-hist').textContent = `Distribuição de Frequência das Temperaturas (INMET - ${nome})`;
+  criar('g-hist', {
+    type: 'bar',
+    data: { datasets: [
+      { type: 'line', data: curva.filter(p => p.x >= min && p.x <= max), borderColor: cor('--coral'), borderWidth: 2, pointRadius: 0, tension: 0.3 },
+      { data: barras.filter(b => b.x >= min && b.x <= max), backgroundColor: comAlfa(cor('--coral'), 0.6), borderColor: cor('--coral'), borderWidth: 1, barPercentage: 1, categoryPercentage: 1 },
+    ] },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { filter: c => c.dataset.type !== 'line', callbacks: {
+        title: c => `${fmt(c[0].parsed.x - 1, 0)} a ${fmt(c[0].parsed.x + 1, 0)} °C`, label: c => `${c.parsed.y.toLocaleString('pt-BR')} registros` } } },
+      scales: eixos('Temperatura (°C)', 'Quantidade de Registros', { type: 'linear', min, max, ticks: { color: cor('--muted'), stepSize: 5 } }, { beginAtZero: true }),
+    },
+  });
+}
+
+// 4. grafico_dispersao_temp_umidade: pontos de temperatura x umidade
+function graficoDispersao(grupo, nome) {
+  const pontos = grupo.dispersao.temperatura.map((t, i) => ({ x: t, y: grupo.dispersao.umidade[i] }));
+  document.getElementById('t-disp').textContent = `Relação entre Temperatura e Umidade do Ar (INMET - ${nome})`;
+  criar('g-disp', {
+    type: 'scatter',
+    data: { datasets: [{ data: pontos, backgroundColor: comAlfa(cor('--purple'), 0.25), pointRadius: 2.5, pointHoverRadius: 4 }] },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${fmt(c.parsed.x)} °C, ${c.parsed.y} %` } } },
+      scales: eixos('Temperatura (°C)', 'Umidade Relativa (%)'),
+    },
+  });
+}
+
+// 5. Temperatura ano a ano: média de cada mês, uma linha por ano
+function graficoAnos(grupo, nome) {
+  const lista = dias(grupo).filter(x => x.ano >= 2020);
+  const anos = [...new Set(lista.map(x => x.ano))];
+  const base = cor('--firebrick');
+  document.getElementById('t-anos').textContent = `Comparação da Temperatura Média Mensal Ano a Ano (INMET - ${nome})`;
+  criar('g-anos', {
+    type: 'line',
+    data: { labels: MESES, datasets: anos.map((ano, i) => {
+      const medias = MESES.map((_, m) => {
+        const v = lista.filter(x => x.ano === ano && x.mes === m && x.v !== null).map(x => x.v);
+        return v.length >= 15 ? v.reduce((a, b) => a + b, 0) / v.length : null;
+      });
+      const c = comAlfa(base, 0.25 + 0.75 * i / Math.max(anos.length - 1, 1));
+      return { label: String(ano), data: medias, borderColor: c, backgroundColor: c, pointRadius: 0, borderWidth: ano === anoAtual ? 3.5 : 1.8 };
+    }) },
+    options: {
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: cor('--muted'), boxWidth: 12, boxHeight: 12 } },
+                 tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fmt(c.parsed.y)} °C` } } },
+      scales: eixos('Mês', 'Temperatura (°C)', { grid: { display: false } }),
+    },
+  });
+}
+
+function mostrar(uf) {
+  if (!DATA || !DATA.ufs[uf]) return;
+  ufAtual = uf;
+  const d = DATA.ufs[uf];
+  const grupo = verAtual === 'estado' ? d.estado : d.capital;
+  const nome = rotulo(d);
+
+  document.querySelectorAll('#ufs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.uf === uf));
+  document.querySelectorAll('#anos button').forEach(b => b.setAttribute('aria-selected', Number(b.dataset.ano) === anoAtual));
+  document.getElementById('p-eyebrow').textContent = `Estado · ${uf}`;
+  document.getElementById('p-nome').textContent = d.nome;
+  document.getElementById('ver-estado').setAttribute('aria-pressed', verAtual === 'estado');
+  document.getElementById('ver-capital').setAttribute('aria-pressed', verAtual === 'capital');
+  document.getElementById('ver-estado-sub').textContent = `${d.estado.estacoes} ${d.estado.estacoes === 1 ? 'estação' : 'estações'} do INMET`;
+  document.getElementById('ver-capital-nome').textContent = `Capital: ${d.capital.cidade}`;
+  document.getElementById('ver-capital-sub').textContent = `Estação ${d.capital.codigo} (${d.capital.estacao})`;
+
+  graficoLinha(grupo, nome);
+  graficoChuva(grupo, nome);
+  graficoHist(grupo, nome);
+  graficoDispersao(grupo, nome);
+  graficoAnos(grupo, nome);
+
+  if (location.hash !== '#' + uf.toLowerCase()) history.replaceState(null, '', '#' + uf.toLowerCase());
+}
+
+function iniciar(dados) {
+  DATA = dados;
+  const caixa = document.getElementById('ufs');
+  Object.keys(DATA.ufs).sort().forEach(uf => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = uf; b.dataset.uf = uf; b.id = 'uf-' + uf; b.title = DATA.ufs[uf].nome;
+    b.addEventListener('click', () => mostrar(uf));
+    caixa.appendChild(b);
+  });
+  const abas = document.getElementById('anos');
+  [2020, 2021, 2022, 2023, 2024, 2025, 2026].forEach(ano => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.ano = ano; b.id = 'ano-' + ano; b.textContent = ano;
+    b.addEventListener('click', () => { anoAtual = ano; mostrar(ufAtual); });
+    abas.appendChild(b);
+  });
+  document.getElementById('ver-estado').addEventListener('click', () => { verAtual = 'estado'; mostrar(ufAtual); });
+  document.getElementById('ver-capital').addEventListener('click', () => { verAtual = 'capital'; mostrar(ufAtual); });
+  const doHash = location.hash.slice(1).toUpperCase();
+  mostrar(DATA.ufs[doHash] ? doHash : 'SP');
+}
+
+window.addEventListener('hashchange', () => mostrar(location.hash.slice(1).toUpperCase()));
+// Redesenha os gráficos quando o tema muda, para as cores acompanharem
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => mostrar(ufAtual));
+new MutationObserver(() => mostrar(ufAtual)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+if (typeof DADOS !== 'undefined') {
+  iniciar(DADOS);
+} else {
+  // Se o <script src="dados.js"> não carregar, busca o arquivo e lê o JSON de dentro dele
+  fetch('dados.js').then(r => r.text()).then(t => {
+    iniciar(JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)));
+  }).catch(() => {
+    document.getElementById('p-nome').textContent = 'Não foi possível carregar os dados. Rode o gerar_dados_site.py para gerar o site/dados.js.';
+  });
+}
+</script>
+</body>
+</html>
