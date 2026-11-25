@@ -151,7 +151,7 @@ footer a { color: var(--steelblue); }
   <div class="grafico">
     <h3 id="t-anos"></h3>
     <div class="tela"><canvas id="g-anos"></canvas></div>
-    <p class="nota">Cada linha é um ano. Os anos mais antigos aparecem mais claros, e o ano escolhido no primeiro gráfico fica mais grosso.</p>
+    <p class="nota">Cada linha é um ano, com uma cor diferente. O ano escolhido no primeiro gráfico fica mais grosso.</p>
   </div>
 
   <footer>Fonte: <a href="https://portal.inmet.gov.br/dadoshistoricos" target="_blank" rel="noopener">INMET, Dados Históricos</a>, de janeiro de 2020 a outubro de 2026.</footer>
@@ -283,7 +283,8 @@ function graficoDispersao(grupo, nome) {
 function graficoAnos(grupo, nome) {
   const lista = dias(grupo).filter(x => x.ano >= 2020);
   const anos = [...new Set(lista.map(x => x.ano))];
-  const base = cor('--firebrick');
+  // Uma cor bem diferente para cada ano (paleta 'tab10' do matplotlib)
+  const CORES_ANOS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#17becf'];
   document.getElementById('t-anos').textContent = `Comparação da Temperatura Média Mensal Ano a Ano (INMET - ${nome})`;
   criar('g-anos', {
     type: 'line',
@@ -292,8 +293,8 @@ function graficoAnos(grupo, nome) {
         const v = lista.filter(x => x.ano === ano && x.mes === m && x.v !== null).map(x => x.v);
         return v.length >= 15 ? v.reduce((a, b) => a + b, 0) / v.length : null;
       });
-      const c = comAlfa(base, 0.25 + 0.75 * i / Math.max(anos.length - 1, 1));
-      return { label: String(ano), data: medias, borderColor: c, backgroundColor: c, pointRadius: 0, borderWidth: ano === anoAtual ? 3.5 : 1.8 };
+      const c = CORES_ANOS[i % CORES_ANOS.length];
+      return { label: String(ano), data: medias, borderColor: c, backgroundColor: c, borderWidth: ano === anoAtual ? 4 : 2, pointRadius: 3 };
     }) },
     options: {
       interaction: { mode: 'index', intersect: false },
