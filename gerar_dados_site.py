@@ -1,3 +1,5 @@
+"""Gera os dados do site: as mesmas contas do main.py, para cada estado e capital do Brasil."""
+
 import glob
 import pandas as pd
 import numpy as np
@@ -63,6 +65,7 @@ NOMES_MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
 
 
 def ler_cabecalho(arquivo: str) -> dict:
+    """ Lê as 8 primeiras linhas do CSV e devolve a UF, o código e o nome da estação. """
     info = {}
     with open(arquivo, encoding=CODIFICACAO_INMET) as f:
         for _ in range(8):
@@ -78,12 +81,14 @@ def ler_cabecalho(arquivo: str) -> dict:
 
 
 def coluna_usada(nome: str) -> bool:
+    """ Diz se a coluna é uma das que usamos (data, hora, temperatura, chuva e umidade). """
     nome = nome.upper()
     return (nome == 'DATA' or nome.startswith('HORA') or 'BULBO SECO' in nome
             or 'PRECIPITA' in nome or 'UMIDADE RELATIVA DO AR' in nome)
 
 
 def resumir_arquivo(arquivo: str) -> dict:
+    """ Lê o CSV de uma estação, limpa os dados e devolve os resumos usados nos gráficos. """
     tabela = pd.read_csv(arquivo, sep=';', decimal=',', skiprows=8,
                          encoding=CODIFICACAO_INMET, usecols=coluna_usada)
 
@@ -132,6 +137,7 @@ def resumir_arquivo(arquivo: str) -> dict:
 
 
 def carregar_dados(caminho: str) -> dict:
+    """ Lê todos os CSVs da pasta csv/ e junta os resumos de todas as estações. """
     arquivos = sorted(glob.glob(caminho, recursive=True))
     if not arquivos:
         raise FileNotFoundError(
@@ -163,6 +169,7 @@ def carregar_dados(caminho: str) -> dict:
 
 
 def chuva_media_mensal(mensal: pd.DataFrame) -> list:
+    """ Calcula a chuva média de cada mês (Jan a Dez), estimando as horas sem dado como no main.py. """
     mensal = mensal.copy()
     soma = mensal.groupby(['Codigo', 'Mes'])[['sum', 'count']].transform('sum')
     chuva_por_hora = soma['sum'] / soma['count'].replace(0, np.nan)
@@ -175,6 +182,7 @@ def chuva_media_mensal(mensal: pd.DataFrame) -> list:
 
 
 def resumir_grupo(dados: dict, filtro) -> dict:
+    """ Prepara os dados dos gráficos de um estado ou de uma capital. """
     diario = filtro(dados['diario'])
     media_dia = diario.groupby('Data')['Temperatura'].mean()
     dias = pd.date_range(media_dia.index.min(), media_dia.index.max(), freq='D')
@@ -202,6 +210,7 @@ def resumir_grupo(dados: dict, filtro) -> dict:
 
 
 def montar_dados_site(dados: dict) -> dict:
+    """ Monta os dados do estado e da capital de cada uma das 27 UFs. """
     ufs = {}
     for uf in sorted(NOMES_ESTADOS):
         codigo, cidade = CAPITAIS[uf]
@@ -222,6 +231,7 @@ def montar_dados_site(dados: dict) -> dict:
 
 
 def salvar_dados_site(dados: dict, arquivo: str):
+    """ Grava os dados no arquivo site/dados.js, que o site lê. """
     texto = pd.Series(dados).to_json(force_ascii=False)
     with open(arquivo, 'w', encoding='utf-8') as f:
         f.write('// Gerado pelo gerar_dados_site.py. Não edite à mão.\n')
@@ -230,6 +240,7 @@ def salvar_dados_site(dados: dict, arquivo: str):
 
 
 def main():
+    """ Função principal: lê os CSVs, calcula os dados e gera o arquivo do site. """
     dados = carregar_dados(CAMINHO_CSV)
     print(f"{len(dados['estacoes'])} estações lidas")
     salvar_dados_site(montar_dados_site(dados), ARQUIVO_SITE)
